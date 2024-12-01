@@ -78,7 +78,6 @@ WSGI_APPLICATION = 'serviciosGoppex.wsgi.application'
 
 
 # Database
-# https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
 DATABASES = {
     'default': {
@@ -86,7 +85,7 @@ DATABASES = {
         'NAME': 'usuarios',
         'USER': 'admin',
         'PASSWORD': 'QfZnGerT50.',
-        'HOST': 'database-2.chyqq0qu2uhi.us-east-2.rds.amazonaws.com',
+        'HOST': 'database-1.ctaa8oy2wvj6.us-east-1.rds.amazonaws.com',
         'PORT': '3306',
     },
     'clientes': {
@@ -94,7 +93,7 @@ DATABASES = {
         'NAME': 'clientes',
         'USER': 'admin',
         'PASSWORD': 'QfZnGerT50.',
-        'HOST': 'database-2.chyqq0qu2uhi.us-east-2.rds.amazonaws.com',
+        'HOST': 'database-1.ctaa8oy2wvj6.us-east-1.rds.amazonaws.com',
         'PORT': '3306',
     },
     'inventario': {
@@ -102,7 +101,7 @@ DATABASES = {
         'NAME': 'inventario',
         'USER': 'admin',
         'PASSWORD': 'QfZnGerT50.',
-        'HOST': 'database-2.chyqq0qu2uhi.us-east-2.rds.amazonaws.com',
+        'HOST': 'database-1.ctaa8oy2wvj6.us-east-1.rds.amazonaws.com',
         'PORT': '3306',
     },
 }
