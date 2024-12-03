@@ -5,6 +5,8 @@ from django.utils import timezone
 import csv
 from django.http import HttpResponse
 from reportlab.pdfgen import canvas
+from django.db import connection
+from django.shortcuts import render, redirect
 
 def lista_clientes(request):
     # Obtener todos los clientes desde la base de datos
@@ -14,40 +16,51 @@ def lista_clientes(request):
     return render(request, 'clientes/clientes.html', {'clientes': clientes})
 
 def agregar_cliente(request):
-    if request.method == 'POST':
-        # Recibe los datos del formulario (esto se definirá luego en tu HTML de formulario)
-        Cliente.objects.create(
-            rut=request.POST['rut'],
-            razon_social=request.POST['razon_social'],
-            giro=request.POST['giro'],
-            direccion=request.POST['direccion'],
-            correo=request.POST['correo'],
-            telefono=request.POST['telefono'],
-        )
-        return redirect('clientes')  # Redirige a la lista de clientes
-    return render(request, 'clientes/agregar_cliente.html')  # Renderiza el formulario
+    if request.method == 'POST':  # Verifica si la solicitud es de tipo POST (envío del formulario)
+        # Recoge los datos enviados desde el formulario
+        rut = request.POST['rut']
+        razon_social = request.POST['razon_social']
+        giro = request.POST['giro']
+        direccion = request.POST['direccion']
+        correo = request.POST['correo']
+        telefono = request.POST['telefono']
+        
+        # Llamar al procedimiento almacenado 'AgregarCliente' para insertar el cliente en la base de datos
+        with connection.cursor() as cursor:  # Abre un cursor para ejecutar comandos SQL directamente
+            cursor.callproc('AgregarCliente', [rut, razon_social, giro, direccion, correo, telefono])  
+            # Llama al procedimiento almacenado con los parámetros correspondientes
+        
+        return redirect('clientes')  # Redirige al usuario a la lista de clientes después de agregar uno nuevo
+
+    return render(request, 'clientes/agregar_cliente.html')  
+    # Si la solicitud no es POST (por ejemplo, GET), renderiza la página del formulario de agregar cliente
 
 
 def ocultar_cliente(request, rut):
-    cliente = Cliente.objects.get(rut=rut)
-    cliente.fecha_termino = timezone.now()  # Marca la fecha de término como la actual
-    cliente.save()
-    return redirect('clientes')
+    # Recuperar el cliente con el RUT específico
+    cliente = Cliente.objects.get(rut=rut)  # Busca el cliente en la base de datos utilizando el RUT
+
+    # Marcar el cliente como "oculto" asignando la fecha de término actual
+    cliente.fecha_termino = timezone.now()  # Asigna la fecha actual al campo 'fecha_termino'
+    cliente.save()  # Guarda los cambios en la base de datos
+
+    return redirect('clientes')  # Redirige al usuario a la lista de clientes después de ocultar uno
+
 
 
 def exportar_csv_clientes(request):
     # Crear una respuesta HTTP con contenido CSV
-    response = HttpResponse(content_type='text/csv')
-    response['Content-Disposition'] = 'attachment; filename="clientes.csv"'
+    response = HttpResponse(content_type='text/csv')  # Define el tipo de contenido como CSV
+    response['Content-Disposition'] = 'attachment; filename="clientes.csv"'  # Indica al navegador que descargue el archivo con este nombre
 
     # Crear un escritor CSV
-    writer = csv.writer(response)
-    writer.writerow(['RUT', 'Razón Social', 'Giro', 'Dirección', 'Correo', 'Teléfono'])
+    writer = csv.writer(response)  # Inicializa un escritor CSV usando la respuesta como destino
+    writer.writerow(['RUT', 'Razón Social', 'Giro', 'Dirección', 'Correo', 'Teléfono'])  # Escribe la fila de encabezado en el archivo CSV
 
     # Escribir los datos de los clientes en el archivo CSV
-    clientes = Cliente.objects.all()
-    for cliente in clientes:
-        writer.writerow([
+    clientes = Cliente.objects.all()  # Obtiene todos los objetos de la tabla "Cliente"
+    for cliente in clientes:  # Itera sobre cada cliente en la base de datos
+        writer.writerow([  # Escribe una fila en el archivo CSV con los datos del cliente
             cliente.rut,
             cliente.razon_social,
             cliente.giro,
@@ -56,7 +69,7 @@ def exportar_csv_clientes(request):
             cliente.telefono
         ])
 
-    return response
+    return response  # Devuelve la respuesta con el archivo CSV adjunto
 
 def exportar_pdf_clientes(request):
     # Crear una respuesta HTTP con contenido PDF
