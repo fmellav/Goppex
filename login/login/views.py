@@ -26,10 +26,10 @@ def login_view(request):
                     return redirect('login')
 
             else:
-                messages.error(request, 'Contraseña incorrecta.')
+                messages.error(request, 'Usuario o Contraseña incorrecta.')
 
         except Usuario.DoesNotExist:
-            messages.error(request, 'El usuario no existe.')
+            messages.error(request, 'Usuario o Contraseña incorrecta.')
 
         except Exception as e:
             # Captura cualquier otro error inesperado
